@@ -14,10 +14,10 @@
 
 ### 对象创建方式
 
-- new：最常见的方式、单例类中调用getInstance的静态类方法，XXXFactory的静态方法
+- new：最常见的方式、单例类中调用getInstance的静态类方法，XXXFactory/XXXBuilder的静态方法
 - Class的newInstance方法：在JDK9里面被标记为过时的方法，因为只能调用空参构造器
 - Constructor的newInstance(XXX)：反射的方式，可以调用空参的，或者带参的构造器
-- 使用clone()：不调用任何的构造器，要求当前的类需要实现Cloneable接口中的clone接口
+- 使用clone()：不调用任何的构造器，要求当前的类需要实现Cloneable接口中的clone方法
 - 使用序列化：序列化一般用于Socket的网络传输
 - 第三方库 Objenesis
 
@@ -107,7 +107,7 @@
 
 ### 实例数据（Instance Data）
 
-#### 说明
+#### 对其填充(Padding)
 
 不是必须的，也没有特别的含义，仅仅起到占位符的作用
 

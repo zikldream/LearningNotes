@@ -50,11 +50,11 @@ public class StringTest1 {
         // 字面量定义的方式，“abc”存储在字符串常量池中
         String s1 = "abc";
         String s2 = "abc";
-        System.out.println(s1 == s2);
+        System.out.println(s1 == s2);//true
         s1 = "hello";
-        System.out.println(s1 == s2);
-        System.out.println(s1);
-        System.out.println(s2);
+        System.out.println(s1 == s2);//false
+        System.out.println(s1);//hello
+        System.out.println(s2);//abc
         System.out.println("----------------");
     }
 
@@ -63,16 +63,16 @@ public class StringTest1 {
         String s2 = "abc";
         // 只要进行了修改，就会重新创建一个对象，这就是不可变性
         s2 += "def";
-        System.out.println(s1);
-        System.out.println(s2);
+        System.out.println(s1);//abc
+        System.out.println(s2);//abcdef
         System.out.println("----------------");
     }
 
     public static void test3() {
         String s1 = "abc";
         String s2 = s1.replace('a', 'm');
-        System.out.println(s1);
-        System.out.println(s2);
+        System.out.println(s1);//abc
+        System.out.println(s2);//mbc
     }
 
     public static void main(String[] args) {
@@ -142,7 +142,7 @@ String的string Pool是一个固定大小的Hashtable，默认值大小长度是
 
 在jdk6中stringTable是固定的，就是1009的长度，所以如果常量池中的字符串过多就会导致效率下降很快。stringTablesize设置没有要求
 
-在jdk7中，stringTable的长度默认值是60013，
+在jdk7中，stringTable的长度默认值是60013，stringTablesize设置没有要求
 
 在JDK8中，StringTable可以设置的最小值为1009
 
@@ -174,7 +174,7 @@ Java8元空间，字符串常量在堆
 
 ### 为什么StringTable从永久代调整到堆中
 
-在JDK 7中，interned字符串不再在Java堆的永久生成中分配，而是在Java堆的主要部分(称为年轻代和年老代)中分配，与应用程序创建的其他对象一起分配。此更改将导致驻留在主Java堆中的数据更多，驻留在永久生成中的数据更少，因此可能需要调整堆大小。由于这一变化，大多数应用程序在堆使用方面只会看到相对较小的差异，但加载许多类或大量使用字符串的较大应用程序会出现这种差异。intern()方法会看到更显著的差异。
+在JDK 7中，interned字符串不再在Java堆的永久代生成中分配，而是在Java堆的主要部分(称为年轻代和年老代)中分配，与应用程序创建的其他对象一起分配。此更改将导致驻留在主Java堆中的数据更多，驻留在永久生成中的数据更少，因此可能需要调整堆大小。由于这一变化，大多数应用程序在堆使用方面只会看到相对较小的差异，但加载许多类或大量使用字符串的较大应用程序会出现这种差异。intern()方法会看到更显著的差异。
 
 - 永久代的默认比较小
 - 永久代垃圾回收频率低
@@ -402,8 +402,6 @@ public class StringNewTest {
 
 ```java
 /**
- * new String("ab") 会创建几个对象？ 看字节码就知道是2个对象
- *
  * @author: zzp
  * @create: 2020-07-11-11:17
  */
@@ -416,7 +414,7 @@ public class StringNewTest {
 
 字节码文件为
 
-```
+```java
  0 new #2 <java/lang/StringBuilder>
  3 dup
  4 invokespecial #3 <java/lang/StringBuilder.<init>>
@@ -456,7 +454,7 @@ String s2 = "1";
 System.out.println(s == s2); // false
 
 String s3 = new String("1") + new String("1");
-s3.intern();
+s3.intern();//创建了一个新的对象 "11"，也就是有了新的地址
 String s4 = "11";
 System.out.println(s3 == s4); // false
 ```
@@ -474,7 +472,7 @@ false
 
 如果是下面这样的，那么就是true
 
-```
+```java
 String s = new String("1");
 s = s.intern();
 String s2 = "1";
@@ -489,16 +487,18 @@ System.out.println(s == s2); // true
 >
 > 而在JDK7中，在JDK7中，并没有创新一个新对象，而是指向常量池中的新对象
 
-#### JDK7中
+#### JDK7/8中
 
-```
+```java
 String s = new String("1");
 s.intern();
 String s2 = "1";
 System.out.println(s == s2); // false
 
 String s3 = new String("1") + new String("1");
-s3.intern();
+ //执行完上一行代码以后，字符串常量池中，是否存在"11"呢？答案：不存在！！
+s3.intern();//在字符串常量池中生成"11"。如何理解：jdk6:创建了一个新的对象"11",也就有新的地址。
+                         //         jdk7:此时常量中并没有创建"11",而是创建一个指向堆空间中new String("11")的地址
 String s4 = "11";
 System.out.println(s3 == s4); // true
 ```
@@ -510,8 +510,9 @@ System.out.println(s3 == s4); // true
 ```java
 String s3 = new String("1") + new String("1");
 String s4 = "11";  // 在常量池中生成的字符串
-s3.intern();  // 然后s3就会从常量池中找，发现有了，就什么事情都不做
-System.out.println(s3 == s4);
+String s5=s3.intern();  // 然后s3就会从常量池中找，发现有了,就吧地址值给s5
+System.out.println(s3 == s4);//false
+System.out.println(s5 == s4);//true
 ```
 
 我们将 s4的位置向上移动一行，发现变化就会很大，最后得到的是 false
@@ -547,13 +548,18 @@ false
 在JDK8中是
 
 ```
-false
+true
 true
 ```
 
 ![image-20200711151326909](images/image-20200711151326909.png)
 
 针对下面这题，在JDK6和8中表现的是一样的
+
+```
+true
+false
+```
 
 ![image-20200711151433277](images/image-20200711151433277.png)
 
